@@ -1,0 +1,199 @@
+19DAY
+
+서비스 :
+네트워크에 서비스와 다르다.
+시스템이 부팅을 할  때 백그라운드에서 실행할 프로세스를 실행 해주는 기능을 서비스 라고 한다.
+
+컴퓨터가 꺼질 때 까지 계속해서 프로세스 동작을 한다.
+모든 운영체제는 서비스가 존재한다. 스마트폰도 서비스가 존재한다.
+
+대표적으로 제일 많이 사용하는 우분투, cent os
+우분투는 1년에 두번 4월, 10월에 버전이 나오는데 버전을 보면 lts가 붙은게 있는데 long term support 길게 지원을 한다. (서버로 사용하는 os는 lts만 사용한다)
+
+우분투의 lts는 기본적으로 10년을 지원한다.
+red hat은 모든 버전이 11년을 지원한다.
+
+아직까지 현업에서는 cent os 6버전, 우분투 12.04 버전도 많이 쓴다.
+그래서 이전 버전의 구조도 알고 있어야한다. cent os는 6버전, 우분투는 16.04 에서 systemd를 사용했다.
+
+init    ->    upstart    ->    systemd
+
+init    ->    sysV    :    유닉스의 표준/ 서비스를 제어하는 녀석, 개선보다 새로 만드는게 좋다라고 생각해서 바꼈다.
+unix는 init을 한참 전부터 사용하지 않았다. linux는 개선 하기 위해서 upstart를 만들었지만, init에서 기능만 조금 더 추가 된거라 init은 계속 사용되었다.
+
+systemd    -    레드햇 계열    /    upstart    -    데비안 계열
+
+지금 systemd를 사용하는거보면 레드햇 계열의 승리이다.
+
+PID = 1 이다.
+상징적인 의미가 있는데 리눅스 커널의 스케줄러가 프로세스 0번이다. 커널이 최초로 실행하는게 1번 프로세스이다.
+예전에 init은 서비스만 관리 했는데, systemd는 서비스 뿐 아니라 시스템 전반적인것에 모두 관여한다.
+
+systemd를 사용해서 서비스를 다룰 줄 알아야 한다. 관리를 하는 것이지 제어할 일은 거의 없다.
+
+/etc/inittab
+runlevel : 동작레벨에 대한 설명 0~6 까지
+운영체제가 동작을 하는 레벨    /    윈도우에는 없는 기능, 굳이 비슷한걸 뽑자면 윈도우의 안전모드와 비슷하다.
+
+정상적인 레벨은 2개 밖에 없는데, 3번과 5번이다.
+
+3번은 full mltiuser mode
+5번은 x11 (GUI를 컨트롤)
+3번과 5번은 똑같다. 3번은 gui가 없는 환경 5번은 gui가 있는 환경이란 차이를 가지고 있다.
+
+그래서 id:3:initdefault 으론 cent os  gui 환경을 할 수 없다.    (cent os mini  ver이라 gui가 애초에 없다)
+
+/etc/rc3.d/
+서비스를 실행할 쉘 스크립트
+ls -l 해보면 심볼릭링크로 연결 되어있다. (init.d로 되어있다)
+
+rc1.d    rc2.d    rc3.d 등등 다 init의 심볼릭링크로 연결 되어있다.
+
+S | K NM <서비스명>
+S : START    K : KILL    (STOP)
+demon process를 띄워준다.
+k는 이미 동작 되어있다면 멈춰준다.
+숫자는 순서대록 작동한다.
+
+쉽게 보려면 chkconfig 명령어 사용
+왼쪽엔 서비스 이름 level에서 start 하면 on, stop이면 off로 되어있다.
+on, off 조절이 가능하다.
+
+리눅스는 레벨에 따라서 똑같은 서비스 가동, 중단 할 수 있다.
+실제로 rc.3 에 있는 스크립트를 실행한다.    ->    서비스를 스타트한다.
+
+service --status-all | more
+service crond (status, stop ,start)
+
+커널이 최초로 실행하는게 init 프로세스이고 init이 모든 프로세스를 컨트롤한다.
+단계적으로 레벨을 올려가려고 하고 레벨마다 다른 서비스를 스타트, 스탑을 한다
+스타트 하다 여러가지 이유로 스탑을 할 수도 있다.
+
+init은 옛날 방식이다.
+
+/etc/init    =>    upstart (init에 기능을 추가한것)
+
+init과 systed의 차이
+서비스를 직렬로 실행시킨다. 여러 개의 각각 서비스를 동시에 실행시키지 않는다. (순서가 존재한다. 차례차례로 실행한다)
+번호를 보고 알 수 있다. 순서대로 직렬 실행한다.
+
+systemd는 서비스를 병렬이라 한번에 여러 개 실행이 가능하고, 당연히 병렬이니까 속도도 빠르다.
+
+부팅이 정상적으로 완료하려면 필요한 서비스가 가동이 되어야하는데 병렬 처리하면 여러 개를 빠르게 킬 수 있게 되고 부팅 속도는 당연히 빨라진다.
+
+서비스간의 의존성 디펜더시
+s13iscsi - 인터넷 스커지    /    네트워크 기반의 스토리지
+네트워크가 연결 되어 있어야 하는 스토리지    /    네트워크 기능을 의존하고 있다.
+
+s10network - 네트워크를 가동 하는 스토리지
+network가 작동하지 않으면 iscsi는 가동 할 수 없다.
+
+init의 단점 중 하나인 의존성을 정의 할 수 없다는 점이다.
+오로지 번호로 네트워크를 먼저 실행 할 뿐 iscsi는 network가 없으면 실행이 안된다는걸 모른다.
+
+서비스 자체에 난 누구를 의존하고 있어요. 라고 선언 할 수 없다.
+모든 서비스는 적절하게 순서를 지켜서만 실행 할 수 있다.
+
+start 순서를 바꾸면 시스템이 난리가난다.    /    개발자가 개발할 때 결정한다.
+
+여러가지 이유가 있지만 위 2가지의 이유가 systemd를 만든 가장 큰 이유이다.
+네트워크 설정을 변경하면 재시작 해줘야하는데, 네트워크를 이용하는 다른 서비스들은 네트워크가 재시작 하는 걸 알 수 없는데
+그러면 시스템에 문제가 심각하게 발생 할 수 있다. 시스템 관리에 상당히 어려움을 갖고있다.
+
+init만 쓰든 upstart를 쓰든 ... init는 서비스 간 의존성을 정의 할 수 없다. 서비스를 직렬로 실행한다.
+
+systemd는 의존성 관계에 없는 서비스는 병렬로 실행 할  수 있다.
+
+/etc/init은 7 버전 부터 사라졌고, /etc/init.d는 남아있는데 네트워크 셀만 남아있다.
+레거시 서비스 하위 호환성 때문에 init 형식이 남아있지만, 점점 버전이 업데이트 되면서 사라질꺼다.
+
+systemctl = systemd를 컨트롤 하는 명령어
+서비스 중에선 legacy도 존재한다.    /    legacy : 옛날, 이전 형태를 의미한다.
+
+systemd unit : systemd는 쉘 스크립트가 아닌 유닛으로 관리를 한다.    /    유닛파일
+서비스 유닛, 타겟 유닛, 오토 마운트 유닛, 장치 유닛, 경로(path) 유닛, 범위(scope) 유닛, 슬라이스(slice) 유닛, 스냅샷 유닛 (특정 상태를 저장 / 돌아가려고), 소켓 유닛, 스왑 유닛, 타이머 유닛이 있다.
+
+시스템에 전반적인 모든 것을 systemd가 관리한다.
+우리는 service와 target을 제일 중요하게 보면 된다.    /    target은 runlevel과 관련있다.
+
+CGroup    -    docker, kubernetes    | 스냅, 슬라이드와 관련    |    중요하다!
+
+systemd 유닛 파일 위치 /etc/systemd/system,    /run/systemd/system,    /usr/lib/sys-temd/systemd 총 세 곳 디렉토리에 있다.
+
+명령어
+systemctl 모든 유닛들의 상태를 볼 수 있다.
+
+systemctl [sub command] [옵션]
+    list units : 시스템에 존재하는 active 유닛을 확인
+    list-unit-files : -t 또는 --type을 추가하여 원하는 유닛의 유형을 선택할 수 있다.    /    -a또는 --all 옵션을 추가하면 not-found 또는 inactive 상태 출력
+    list-sockets : 시스템에서 대기 중인 소켓 유닛을 확인
+    is-active [유닛이름] : systemd 유닛의 실행상태를 출력    /    is-enabled [유닛이름] : system 유닛 활성화 상태를 출력
+
+systemctl list-dependencies [유닛이름] : 특정 유닛의 의존성 확인    systemctl status [유닛이름] : 특정 유닛의 자세한 내용 출력
+systemctl start [유닛이름] : 유닛 실행                                                 systemctl stop [유닛이름] : 유닛 중지
+systemctl enable [유닛이름] : 유닛 활성화                                          systemctl disable [유닛이름] : 유닛 비활성화
+systemctl restart [유닛이름] : 유닛 재시작                                          systemctl reload [유닛이름] : 유닛 다시 읽기
+systemctl mask : 유닛 마스킹 (유닛 중지 시키고 disable 상태에서 가능)    systemctl unmask : 유닛 마스킹 해제
+
+ACTIVE, SUB는 현재 상태를 보여준다.
+일반적으로 서비스들은 Running 상태가 정상적으로 실행되고 있는 상태이다.
+
+running waiting (정상적인 상태에서 부수적인 상태를 표현), exited
+
+is-active 현재 상태
+is-enabled 부팅 시 상태
+
+stop -> start 는 id가 바뀐다.
+
+service 를 어떻게 작동 시키는지?
+서비스를 재시작을 해줘야한다. (restart)    동작방식을 바꾸면 stop -> start 클라이언트가 서비스 이용 중 down time이 발생되는데
+reload를 하면 된다.    /    reload를 해도 동작을 안하면 restart를 해줘야한다.
+
+HUP - hang up
+
+로그 관리
+시스템로그는 너무 많은아서 분류(필터) 해서 저장(액션)을 해야한다.
+
+logger -p kern.info "발생 메시지"    /    tail -t : 실시간으로 마지막 내용 볼 수 있다.
+service : reload, restart 안하면 반영이 안될 수도 있다.
+
+journalctl : systmed가 남기는 로그        /    명령어를 사용하면 전체 로그를 볼 수 있다.
+    -p : 우선순위를 지정하여 로그 출력
+    -r : 역순으로 본다
+    -n 일정 개수 저널 데이터 출력
+    -f : live view
+    --since '0000-00-00' : 특정 날짜의 저널 데이터 조회
+    --since '0000-00-00' --until '0000-00-00' : 특정 기간의 저널 데이터를 조회 할 때 사용
+    -o (shrot, verbose, json, json-pretty)
+    
+    _PID
+    _UID
+    _GID
+    _COMM
+    _SYSTEMD_UNIT
+
+jornalctl boot-id
+    --list-boots : 분리된 저널 데이터를 조회 할 수 있다.
+    -b 특정 부트 번호
+
+등등...
+
+/run/log/journal = journalctl ??
+
+데이터 저장 디렉토리 생성 및 설정 명령어
+
+예제 :
+mkdir /var/log/journal
+chown root;systemd-journal /var/log/journal/
+chmod g+s /var/log/journal/
+systemctl restart systemd-journald
+
+runtime 동작 중에 만 중요한
+
+어플리케이션 동작때 필요한 데이터
+root    /run : 임시
+           /var : 영구
+
+run은 디스크가 아니다. memory    => 재부팅하면 / run/log는 없어진다.
+
+PID 파일  자신의 프로세스 ID, 나를 추적하기 위해서, 프로세스 ID 찾을 때    |    deadlock 방지, 잠금파일  쓰기를 못하게 한다.
