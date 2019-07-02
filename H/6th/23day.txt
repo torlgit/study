@@ -1,0 +1,246 @@
+23day
+
+런타임
+
+server
+#firewall-cmd --add-service http
+#firewall-cmd --add-service http --permanent            /            --permanent (영구 설정?)
+#chron -t dafault_t a.html
+#chron -t httpd_sys_content_t a.html
+
+firewall-cmd --state    -    방화벽 실행 여부 확인
+firewall-cmd --reload    -    방화벽 다시 로드
+firewall-cmd --list-all    -    사용 가능 서비스, 포트 출력
+firewall-cmd --add-[service, port]    -    서비스, 포트 추가
+firewall-cmd --remove-[service, port]    -    서비스, 포트 제거
+
+서버pc http 방화벽
+
+desktop
+curl 10.0.2.20/a.html
+
+getenforce    -    현재 시스템의 selinux설정을 확인하는 명령어
+setenforce    -    selinux를 변경하는 명령어    (enforcing or permissive) 아예 종료해야 disalbed 모드가 된다.
+
+enforcing : 정책을 차단하고 로그를 남긴다.
+permissive : 정책을 위반 했을  때 위반 내용을 경고만 한다.    (로그로 남긴다 / 차단안함)
+
+로그를 var/log/message 등에 남긴다.
+
+http 상태코드
+100번대     요청을 받았으며 프로세스 계속한다.
+200번대    성공적으로 받은 상태
+300번대    정상적으로 작동하는 상태 추가 동작 대기
+400번대    문법이 잘못 되었거나 요청을 처리할 수 없다.    /    접근할 수 없다.
+500번대    서버가 요청에 대해 수행하지 못했음
+
+https://ko.wikipedia.org/wiki/HTTP_%EC%83%81%ED%83%9C_%EC%BD%94%EB%93%9C    http 상태코드 위키백과
+
+상위 레이블 컨텍스트 디렉토리에 파일이 생성이 되면 해당되는 레이블을 상속한다.
+
+ps -ef 첫 번째로 나오는 항목은 프로세스를 실행하는 사용자, PID, 1번 프로세스 systemd 등.
+
+웹이 작동하는 프로세스는 아파치이다.    /    아파치가 응답을 해준다.
+아파치의 소유자가 접근을 한다.
+
+프로세스를 실행할 때 소유자인 root는 rw 권한을 갖는다. (umask 기본 0022)    /    user umask는 기본 0002
+
+명령어를 쳤을 때 어떻게 수행을 하는지 의미에  대해서 기억을 하고 있어야한다.    PID, 소유자 등..
+
+모든 서비스는 이렇게 작동을 한다.
+Dns, Web service, 방화벽
+프로세스가 어떤 파일에 접근을 하는데 selinux와 퍼미션에 제어를 받게된다.
+selinux를 제어 하게되면 퍼미션 제어를 받는다.
+퍼미션 이전에 적용 받는건 레이블이다.
+시스템 서비스의 개념이다. 단순하게 vi edit, cat 프로세스가 파일에 접근할 때 접근제어를 한다.
+
+restorecon : 원래대로 chcon 설정을 복구한다.
+semanage fcontext -l
+
+/var/www(/.*)?    메타 캐릭터
+/var/www 디렉토리에 어떤 파일 이든 이라는 의미    /    *은 앞에 있는 글자, 없는 것까지 포함한다.
+
+/srv 서비스용으로 사용할 디렉토리 리눅스마다 있을수도 있고 없을수도 있다.
+
+/etc/httpd/conf/httpd.conf
+파일 수정 전에는 .bak으로 하나 더 만들어서 백업을 만들자.
+
+설정 파일 변경사항을 확인할 때 diff를 쓰자.    /    파일의 변경사항을 볼 수 있다.
+chcon으로 바꾼건 임시로 바꾼거지 restorecon 하는 순간 다시 돌아간다.
+
+cd /etc/httpd/conf.d/
+
+/home/user/public_html    =    http://x.x.x.x/~user/
+/home/ab/public_html
+
+httpd가 접근 해야한다.    -    apache
+711 권한 cd로 넘어갈수만 있게 해준다. 그래야지만 apache가 디렉토리를 접근할 수 있다.
+중간에 권한이 없으면 통과를 못한다.    -    최소한의 권한
+
+curl http://10.0.2.20/~user
+
+server
+/home/user
+mkdir public_html
+
+ll -dZ public_html
+semange fcontext -l    |    grep public_html
+echo "hello user home dir" > public_html/a.html
+
+selinux 부울
+getsebool -a    |    grep homedir
+setsebool httpd enable homedirs on
+
+setsebool -P httpd_enable_homedir on    (-P 영구적)
+
+semange boolean -l (리스트)
+
+해답지
+su - tt
+pwd
+mkdir public_html
+11 -
+chmod 711 tt
+
+LISTEN    0    128    :::80    :::*
+::는 모든 아이피를 의미한다.
+
+별도로 설정하지 않으면 기본적으로 모든 인터페이스에 서비스 하는게 기본이다.
+http-alt    -    8080 대체 포트
+
+시스템포트 0~1023    [관리자만 사용이 가능하다]    /    8080 일반 사용자도 사용이 가능한 포트
+8080 포트, 포트를 바인딩한다. 프로세스와 포트가 바인딩 해야한다.    (포트 바인드, 바인드 포트)
+
+웹 할때 8080 포트를 많이쓴다.
+물리적, 논리적으로 방화벽 조건에 의해서 막을 수 있지만, 공격이란건 어떻게 들어올지 모른다.
+중요한건 포트를 잘 알려지지 않은 비표준포트로 서비스 하는 경우도 상당히 많다.    /    보안 때문에
+
+reload, restart 할 때 오류가 나온다면 중간에 오타를 친거다.
+jouranlctl (오류 체크)
+
+semanage port -l    |    grep httpd
+semanage port -a -t http_port_t -p tcp 8088
+
+ss -tnlp | grep ssh
+ssh server -p 2022    (프토로 접속할 때)
+
+selinux 는
+mac 목적이 강하다.    /    주체가 객체에 접근을 할 때 lavel 등급이 존재한다.
+
+httpd는 무조건 root가 실행했었다.
+실제로 루트는 퍼미션을 제어받지 않는데 프로세스를 통하면 모든 파일에 접근이 가능하다.
+/var/www/html    |    /etc/httpd/....
+
+어떤 소프트웨어든 완벽한 소프트웨어는 없다.
+소프트웨어를 만들다보면 오류, 어쩔  수 없는 보안에 결함이 있을 수 있다.
+dac 기법에서는 막을 방법이 없다.
+
+루트 권한을 취득하더라도 레이블을 이용해서 접근을 막을 수 있다.
+이것을 하기 위해서 만든게 selinux이다.
+
+selinux도 취약점이 있을 수 있고 취약점을 통해서 접근 할 수 있다..    하지만  selinux를 안하는 거보다 하는게 보안상 더 낫지 않나..
+
+selinux가 활성화 되지 않는 경우
+구성을 변경하더라도 구성 변경한게 적이 된다. 그 이유는 제대로 알 수 없다.
+로그에 systemctl 퍼미션 디나이 등 나오지 않으면 알 수 없다.
+그럴때 어떻게 해결 해야하나??    ->    그걸 위한 도구가 있다.
+
+문제 해결 순서
+1. 인포싱 모드라면 퍼미시드 모드로 전환 (해당 되는 서비스를 실행 했을 때 문제가 없다는걸 확인해야함)
+    - 그래도 안된다면 SELinux와 아무 문제가 없다.
+
+2. 해당 프로세스가 접근하는 파일에 레이블, 포트에 대한 레이블, 부울 확인.
+
+3. 모든 거의 대부분 로그는 /var/log/message (시스템에 가장 기본적인 시스템로그 syslog에 의한 전체적인 로그를 기록한다.
+정책 위반은 message, AVC(access vetor cache /var/log/audit/audit.log) audit에 정책 위반을 담는다.
+
+selinux log
+sealbert -b (GUI 환경 제공)    /    X포워드 사용가능
+ignore : 경고창 무시
+delete : 경고창 삭제
+troubleshoot : 문제 해결 방식
+
+acount : 회계, 감사추적
+
+차단 메시지가 audit에 나온다. message 보다 더 자세하게 담는다.
+
+DNS
+DNS가 없으면 인터넷을 하지 못한다. 목저은 IP를 FQDN으로 바꿔주는것, FQDN을 IP로 바꿔주는것 (도메인을 아이피로 바꿔준다)
+
+DNS는 비교적 최근에 나왔다. 처음부터 DNS가 있었던것은 아니다. 
+
+hosts
+처음엔 /etc/hosts가 있었다.
+대부분의 unix 계열은 /etc 밑에 있다. 윈도우는 c드라이브 밑에 windows/system32/drivers/etc/hosts에 존재한다.
+
+잘 안쓴다.    =    쓰기는 한다. 아예 안쓰진 않는다.
+왼쪽은 IP, 오른쪽은 FQDN 이 파일은 DNS가 있기전 부터 인터넷이 처음 있었을때 부터 있었다.
+
+arpa,
+
+darpa(defemse advanced research projects agency) :
+미군 방어에 관련된 영구를 하는 기관, arpanet 인터넷을 제일 처음 만들었다.
+최초로 구현한 네트워크, 네트워크란 의미로 많이 쓰임.
+유닉스를 만든 시스템이 pdp7 이다.
+
+hosts
+지금 현재 dns가 있지만, 시스템에서 호스트 주소를 물어볼 때 dns보다 hosts한테 먼저 물어본다.
+악성코드가 hosts를 감염시키는 경우가 많다. 우선순위가 높아서 보통 hosts에 사이트 추가 하는 악성코드 감염을 많이 시킨다.
+
+dns 명령어가 크게 3가지 있는데,
+host
+nslookup
+dig
+
+dns한테 쿼리를 날려서 응답을 받는 방식    /     세 가지 명령어 모두 DNS에 질의(query)를 한다.
+
+DNS 레코드
+A, AAAA :
+A = ipv4    /    AAAA = ipv6 를 나타낸다.
+
+CNAME :
+호스트의 별칭 정보를 나타낸다.
+Forward lookup (정방향 조회)
+
+MX :
+메일 서버, 숫자 우선순위 / 메일을 주고 받기 위해 사용
+
+NS :
+네임서버, DNS 서버
+
+PTR :
+reverse lookup    / in addr arpa가 붙는다.    /    인버스도메인 ip주소를 이용해서 도미엔 이름을 조회하는 것 역질의
+ip를 물어봤을 때 fqdn을 가르쳐준다. 간혹 필요한 경우가 있다.    (ip 형식이 없다  /  fqdn 형식이 정해져있다)
+dns는 fqdn 도메인을 사용하기 위한 형식
+
+역방향이 왜 필요할까?
+udp를 쓴다. udp는 세션이 없다. 내가 누구랑 통신하는지 모른다. 응답 검증을 못한다.
+누군가 조작된 dns를 준다면 역으로 지리한다.
+dns를 날리고 ptr로 지리 했을 때 응답이 안오면  가짜 사이트일 가능성이 있다.
+
+SOA :
+영역역을 시작할 수 있는 권한을 가지고 있는 사람에 대한 정보    =    권한의 시작    /     이 도메인 누가 관리하나..?
+
+TXT : 
+거의 없는 경우가 많다.    /    보고 알 수 있는 것이 없다.
+
+host 명령어
+    -v : 상세한 정보를 표시한다. DNS 서버의 더 많은 정보를 포함한다.
+    -t : 이 옵션은 all의 의미를 갖고 있다. dns를 조회할 때 모든 타입 레코드를 출력
+    -l : 리스트 모드로 결과를 출력. DS 레코드 조회가 아닌 영역 전송(zone transfer) 
+
+DNS Query
+    - 제귀
+    - 순환
+
+DNS Respanse    /    Answer
+    - 권한 있는 응답
+    - 권한이 없는 응답
+
+authority는 권한이 있는 응답이다.
+
+DNS 계층 구조
+    Root Hint
+    DNS Record Type
+
+위주로 공부를 해보세요.
