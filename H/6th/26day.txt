@@ -1,0 +1,107 @@
+26DAY
+
+예제 1번
+
+Domain: abc.com
+
+<VM1>
+hostname: server1 | ipa | ns1
+NIC
+    1: nat network
+    2: nat network  (teaming: runner=activebackup) 10.0.2.10
+    3: host-only    192.168.56.10
+역할: FreeIPA 서버, DNS Master
+IPA: ldapuser01 사용자 생성
+DNS: abc.com 도메인의 정방향 조회 / 알림 / 영역 전파
+SWAP: 1G 스왑 영구 추가
+
+<VM2>
+hostname: server2 | ns2 | www
+NIC
+    1: nat network
+    2: nat network  (teaming: runner=activebackup) 10.0.2.11
+    3: host-only    192.168.56.11
+역할: DNS Slave | 웹 서버 | DHCP 서버
+DNS: abc.com 도메인의 정방향 조회 동기화
+WEB: index.html "hello abc.com world" 출력
+DHCP: 10.0.2.0/24 네트워크만 IP 임대, 범위 100~200, VM3는 110 예약, DDNS 구성
+Disk: LVM, VG:wdata, LV:wcontent, XFS 1GB, /var/www/html 영구 마운트
+
+<VM3>
+hostname: client
+NIC
+    1: nat network  10.0.56.110
+    2: host-only    192.168.56.110
+IPA Client 구성
+ldapuser01 로그인
+
+VM3 -> VM1(server1.abc.com, server2.abc.com) SSH 키 인증
+
+문제 풀이
+VM1
+yum -y install bind, ipa-server, ipa-server-dns
+
+스왑 디스크 만드는 방법
+fdisk 생성 후 스왑으로 파티션을 만든다. (82번 스왑)
+mkswap (스왑 디렉토리를 생성)
+vi /etc/fstab     (디바이스    swap     swap     default 0 0)    |    장치를 영구적으로 마운트 하기 위한 작업
+swapon -s
+mount -a
+swapon /dev/sdb1
+
+swapon -s
+스왑이 제대로 되어 있으면 swapon -s 확인 후 lsblk로 확인 하면 된다.
+
+IPA를 설치 할 때 hosts가 실제로 존재하는 도메인도 있으니
+/etc/hosts 를 수정한다.    /    예:    10.0.2.10   ipa.abc.local 등.
+
+ipa 할 때 hosts를 localhost로 하고 설치 진행.
+
+VM2
+DNS을 위한 bind, HTML 생성을 위한httpd DHCP 서버 구성을 위한 dhcp
+yum -y install bind httpd dhcp
+
+궁금한 점.
+ddns를 구성 할 때 메인 dns 는 vm1인데, dhcp는 vm2 인데 저널 파일 생성이 되는지. 방법은 어떻게 되는지.
+
+VM3
+host -t ANY abc.com (ns.1 등 모든 정보가 나온다)
+
+월요일 테스트 문제
+
+Domain: xyz.local
+
+<ipa>
+Name    ipa.xyz.local
+NIC    1 Nat Network
+    2 Nat Network    Team(activebackup): external-static, 10.0.2.254/24, 10.0.2.1
+    3 Host Only    mgmt-static, 192.168.56.254
+Role    IPA, DNS
+Disk    sdb -> Swap 1G
+
+DNS    IPA 설치시 통합으로 설치(별도로 DNS 구성 X)
+IPA    모든 시스템 ipa-client-install 등록
+    storage.xyz.local / web.xyz.local / client.xyz.local
+    사용자: ldapuser01 (bash 기본쉘) 사용    
+
+<storage>
+Name    storage.xyz.local
+NIC    1 Nat Network
+    2 Nat Network    Team(activebackup): external-static, 10.0.2.250/24, 10.0.2.1
+    3 Host Only    mgmt-static, 192.168.56.250
+Disk    SATA 1G 3개 추가
+LVM    sdb sdc sdd -> VG:storage -> LV:data1 (1G) -> /share
+    
+<web>
+Name    www.xyz.local
+NIC    1 Nat Network
+    2 Nat Network    Team(roundrobin): external-static, 10.0.2.240/24, 10.0.2.1
+    3 Host Only    mgmt-static, 192.168.56.240
+Web    DocumentRoot: /srv/www
+    Document: index.html (hello www.xyz.local world)
+
+<client>
+Name    client.xyz.local
+NIC    1 Nat Network    external-static, 10.0.2.10/24, 10.0.2.1
+    2 Host Only    mgmt-static, 192.168.56.10
+SSH    Key Authentication (-> storage, web, ipa)
