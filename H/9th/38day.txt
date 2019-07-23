@@ -1,0 +1,202 @@
+38day
+
+정적은 누구나 똑같은 형태
+동적은 작동 방식에 따라 바뀌는 형태
+
+웹이라고 하는건 엄청나게 복잡한 형태이다.
+
+요즘에 나오는 모든 형태가 웹으로 구현되기 때문에 웹을 모르면 아무것도 할 수 없다.
+웹 서버, 웹 어플리케이션 서버(was)
+
+URL (Uniform Resource Locator) : http 부터 html까지의 범위
+URN (Uniform Resource Name) : 프로토콜을 제외한 전체 나머지
+URI (Universal Resource Identifier) : 밑에 주소 전체를 URI 라고한다. 웹 콘텐츠, 웹 문서, 웹 페이지 다 같은 의미 웹 문서를 식별하기 위한 하나의 주소 통합 리소스 원 식별자라는 의미로도 해석할 수 있다.
+
+http://user:user@www.abc.com.:80/abc.html?q=korea&t=abc
+|<-----------------------------URI------------------------------>|
+|<-------------------URL----------------------|>
+       |<-----------------------------URN------------------------>|
+                                                                     |<--parameter-->|
+위와 같은 형태는 주소에 id, pw가 노출되기 때문에 위험한 형태이고 현재는 안 쓰이는 형태이다.
+파라미터는 웹 어플리케이션에 전송하는 형태이다.
+
+file://etc/passwd
+
+ftp://ftp.abc.com
+웹에서만 사용하는 형태는 아니다.
+파일을 나타내는 형태, 식별하는 위한 리소스라고 할 수 있다.
+
+Web client :
+html, javascript, 그림, css 등을 웹 서버에 요청을 해서 받아오는 형태, 웹 어플리케이션한테 요청하지 않는다.
+보통 Web Browser 형태이다. 웹 서버에 HTTP 요청을 하고 웹 서버로 부터 HTTP 응답을 받는다.
+
+Web server :
+html (hypertext markup language) 웹의 가장 기본적인 형태
+javascript 정적인 환경을 조금 더 동적으로 만들기 위해 사용한다. ( java ≠ javascript ) - 혼자만 동적인 콘텐츠 이다. 나머지는 정적인 콘텐츠
+그림
+css 폰트, 정렬의 정의 style을 정의하는 것
+
+웹 서버는 이 4가지를 Client에게 제공하는 형태이며 client와 Client Side Language 라고한다. 
+클라이언트가 특정 콘텐츠를 요청하면 해당 콘텐츠가 있다면 응답한다.
+(Linux) apache, nginx, (MS) IIS 웹서버 + 웹 어플리케이션 등으로 서버를 구현한다.
+
+Web Application server :
+ASP ( Active server page ) : .net , ASP.net 등을 사용한다 C#과 비슷한 형태
+PHP ( Hypertext Preprocessor) :  C언어 스타일 GNU,  윈도우, 유닉스 환경에서 모든 서버를 거의 다 지원한다.
+JSP ( Java server page ) : java와 비슷한 형태 언어의 표준 (관공서 등 정부에서 쓰이는 형태이다) tomcat, wildfly (jboss), weblogic, websphere
+Python (Django framework)
+Ruby
+Node.js
+
+Server Side Language로 client-server 구조에서 server 쪽에서 사용하는 언어라고 볼 수 있다.
+오로지 동적인 콘텐츠로 예전에 웹 언어가 나오기 전엔 C, C++, perl (CGI) 등을 사용해서 구현했었다.
+CGI : 웹 서버 상에서 프로그램을 동작시키기 위한 조합.
+static content : 로그인 등은 동적 콘텐츠이고 클라이언트는 이것을 볼 수 없다.
+
+Database server :
+Oracle DB, MY SQL, Maria DB, PostgreSQL, MS SQL (리눅스도 사용 가능) 등이 있다.
+
+HTTP 요청
+Header  |  Payload  | footer 보통의 head 형태
+
+Header
+|-------|        공백을 삽입하는데 삽입 하닌 이유가 있다.
+Body(html, css, 그림, file, js)
+
+IP Header = 20~60bit
+Ethernet Header = 14byte
+HTTP는 Header가 정해져 있지 않다. -> 너무 비대하기 때문에
+
+HTTP 응답
+
+/r/n 윈도우에서 사용하는 형태 /r 제일 앞으로 /n 밑줄 삽입 = 2byte
+/n    리눅스에서 사용하는 형태 /n 밑줄 삽입 = 1byte
+
+윈도우에서 리눅스로 볼 때 멀쩡하지만 리눅스에서 만든걸 윈도우에서 보면 한 줄로 보인다.
+
+완성형    해 = 윈도우
+조립형    ㅎ+ㅐ = 리눅스(mac)
+등 이유로 글자가 리눅스, mac에서 작성한 한글이 윈도우에서는 다르게 보인다.
+2byte 라는 용량을 차지하기 때문에 ms에서도 /n 형식으로 바꾸려고 한다고 한다.
+
+HTTP Method :
+GET, POST <- http 요청 방식 GET, POST의 parameter 전송방식이 다르다.
+
+HTTP code :
+1xx 거의 못보는 형태 / 파일이 대용량이라서 네트워크가 느려지면 간혹 볼 수 있다고 한다.
+2xx 정상적인 형태 (200), 201 콘텐츠 요청 등등 ..
+3xx http를 검색하면 https 방향재지정 모바일에서 www.naver.com 치면 m.naver.com 으로 바꿔주는것 등.
+4xx Forbidden(403), notfound(404) 콘텐츠가 없을 때 / 보통 client 문제라고 한다.
+5xx 서버 측 오류 (501~504) 503 - 시스템 부하, 502,504 - gateway 문제
+
+HTTP 0.9, 1.0 = 현재는 안 쓰이는 형태
+HTTP 1.1 :
+1999년 부터 현재까지도 쓰이는 형태, 프로토콜이 상당히 느리다. 요청 + 응답 / TCP ACK를 받아야한다.
+HTTP 2.0 :
+아직 널리 사용되지 않고 일부분만 사용되고 있다. 대규모로 한번에 요청과 응답이 가능하다.
+Google chrome spdy : 구글에서 개발한 비표준 개방형 네트워크 프로토콜 HTTP2.0에 기반이 됐다고 한다.
+
+검색 (동적) / 로그인페이지, ui, 게시판
+정적 = 누가봐도 다 똑같은 형태
+
+client request / server response
+method에 따라서 값이 있는지 없는지 볼 수 있다. (정해져있는 형태)
+get으로 요청 했을 때 header는 무조건 있지만 body는 있을수도 있고 없을수도 있다 (option)
+응답은 반드시 있다.
+
+body가 있던 없던 헤더가 끝나는 부분은 명확히 표시를 해야하는데 공백으로 표시를 한다.
+응답도 마찬가지로 헤더 부분은 끝나는 부분이 공백으로 표시된다.
+요청한 콘텐츠가 서버에 없으면 기본 페이지를 보여준다. 모든 웹 서버에는 기본 페이지가 존재한다.
+
+요청
+
+GET <- Method, resouce version (무조건 첫 번째)
+단순 콘텐츠 요청, 웹 페이지 요청
+
+GET /hello.html HTTP/1.1
+/ : DocumentRoot
+/ : 요청하는 버전
+
+Host : 192.168.122.10
+host가 들어가고 요청한 주소가 들어간다.
+포트는 생략이 된 형태
+
+GET은 Host는 무조건 있어야한다?
+
+User-Agent : curl/7.58.0
+요청하는 브라우저, 어플리케이션 (현재는 curl로 요청했다)
+
+Accept : */*
+내가 사용하는 어플리케이션에 웹 서버가 응답을 했을 때 어떤 형태로 줄건지는 내가 받아드릴 수 있는 형태를 표시한다.
+*/* 는 모든 상태의 형태를 받아드릴 수 있다는 형태이다.
+스마트폰에서는 naver.com 으로 접속을 못하고 m.naver.com 으로 리다이렉션을 한다.
+사용자 환경에 따라서 레이아웃을 바꾼다.
+
+응답
+
+HTTP/1.1 200 OK
+응답 버전, 응답 코드
+
+Date : Tue, 23 Jul 2019 02:32:57 GMT
+응답한 시간
+
+Server: Apache/2.4.6 (CentOS)
+웹 서버의 종류 / 현재 형태는 별로 좋지않은 형태이다. 버전에 대한 취약점이 있을 수 있기 때문에 공격할 여지를 준다.
+클라이언트가 서버의 종류까지 알 필요가 없다.
+
+Last-Modified: Tue, 23 Jul 2019 02:31:52 GM
+콘텐츠가 마지막으로 변경한 시간 / 일시적으로 디스크에 저장한다. (웹 캐시) 다음번 요청할 때 변경되지 않는 데이터를 요청해서 응답을 할 때 콘텐츠 사이즈가 큰데 또 응답을 받게 되면 부화가 생기는 형태이다.  body 부분이 응답하지 않고 cache가 있다고 전송한다.
+
+ETag: "c-58e4ffecebc8e"
+???
+
+Accept-Ranges: bytes
+콘텐츠 단위
+
+Content-Length: 12
+콘텐츠 길이
+
+Content-Type: text/html; charset=UTF-8
+콘텐츠 타입, html 이고 유니코드 형식인걸 알 수 있다.
+
+php <? ?>
+jsp .net <% %>
+사이에 동적 콘텐츠가 들어간다.
+html 사이에도 php가 들어갈 수 있다. 다른 형태의 포맷이 들어갈 수 있다.
+php 모듈을 추가할 수 있다.
+
+php 정적인 콘텐츠로 변환 시켜서 클라이언트한테 전달한다.
+그래서 텍스트 밖에 남지 않는다.
+동적인 콘텐츠 소스코드를 그대로 볼 수 없다. 그래서 클라이언트는 정적인 콘텐츠로만 볼 수 있다.
+
+html form 태그
+input type
+
+              parameter
+GET        URL ?
+동적인 콘텐츠에 파라미터를 넘겨준다. (URL에 붙인다) / 단순 페이지 요청이나 중요하지 않는 페이지 요청을 GET 방식을 사용한다.
+파라미터는 '?'  뒤에 붙는다. 쉽고 빠르지만 조작이 가능하다.
+
+POST       HTTP BODY
+추가적인 정보 파라미터를 전달할 때 GET POST는 파라미터 값이 다르다.
+
+실제 다이나믹 콘텐츠는 우리가 볼 수 없다. 모든 것들은 정적으로 만들어 놓을 수 없다.
+요즘에는 아주 빠르게 광고, 뉴스 등이 바뀌기 때문에 정적인 콘텐츠로 만들 수 없다.
+
+dpkig -i = cent os rpm 방식
+
+                ->->
+client <-----|------------------> server
+                <-<-
+                 zap
+vnet0 = 가상컴퓨터 네트워크 카드
+brctl show = 브릿지를 보는 명령어
+
+HTTP Method
+GET
+POST
+
+Head/put/Delete = 조사하고 알아볼 것
+method에 따라서 body가 문제가 있는지 없는지 (get은 body가 없을 수 있지만 post는 무조건 있어야한다)
+파라미터 여부 문서를 정리하는게 필요하다.
+응답 코드도 조사하고 알아볼 것
